@@ -11,12 +11,27 @@ const save = (key, data) => localStorage.setItem(key, JSON.stringify(data));
 class User {
     constructor(username, password, role = "user") {
         this.username = username;
-        this.password = password;
+        this._password = password; // konvensi private
         this.role = role;
     }
+
+    // GETTER
+    get password() {
+        return "*****"; // tidak pernah expose password asli
+    }
+
+    // SETTER
+    set password(newPass) {
+        if (newPass.length < 5) {
+            alert("Password minimal 5 karakter");
+            return;
+        }
+        this._password = newPass;
+    }
+
     // ENCAPSULATION
     checkPassword(input) {
-        return this.password === input;
+    return this._password === input;
     }
 }
 
@@ -25,9 +40,23 @@ class Account {
         this.accountNumber = this.accountNumber || generateRek();
         this.name = name;
         this.type = type;
-        this.balance = balance;
+        this._balance = balance;
         this.owner = owner;
         this.history = this.history || [];
+    }
+
+    // GETTER saldo
+    get balance() {
+        return this._balance;
+    }
+
+    // SETTER saldo (proteksi)
+    set balance(amount) {
+        if (amount < 0) {
+            alert("Saldo tidak boleh negatif");
+            return;
+        }
+        this._balance = amount;
     }
 
     // ENCAPSULATION
@@ -70,10 +99,10 @@ function login() {
 
     // Admin login
     const admin = users.find(x =>
-        x.username === u &&
-        x.password === p &&
-        x.role === "admin"
-    );
+    x.username === u &&
+    x.checkPassword(p) &&
+    x.role === "admin"
+);
 
     if (admin) {
         logged = admin;
