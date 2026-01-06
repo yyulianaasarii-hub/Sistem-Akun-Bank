@@ -7,20 +7,18 @@ function generateRek() {
 const load = key => JSON.parse(localStorage.getItem(key)) || [];
 const save = (key, data) => localStorage.setItem(key, JSON.stringify(data));
 
-// CLASS
+// SUPER CLASS USER
 class User {
     constructor(username, password, role = "user") {
         this.username = username;
-        this._password = password; // konvensi private
+        this._password = password; 
         this.role = role;
     }
 
-    // GETTER
     get password() {
-        return "*****"; // tidak pernah expose password asli
+        return "*****"; 
     }
 
-    // SETTER
     set password(newPass) {
         if (newPass.length < 5) {
             alert("Password minimal 5 karakter");
@@ -29,12 +27,20 @@ class User {
         this._password = newPass;
     }
 
-    // ENCAPSULATION
+    // ENKAPSULASI
     checkPassword(input) {
     return this._password === input;
     }
 }
 
+// SUBCLASS USER
+class Admin extends User {
+    constructor(username, password) {
+        super(username, password, "admin");
+    }
+}
+
+// Class (ENKAPSULASI)
 class Account {
     constructor(name = "", type = "", balance = 0, owner = "") {
         this.accountNumber = this.accountNumber || generateRek();
@@ -45,12 +51,10 @@ class Account {
         this.history = this.history || [];
     }
 
-    // GETTER saldo
     get balance() {
         return this._balance;
     }
 
-    // SETTER saldo (proteksi)
     set balance(amount) {
         if (amount < 0) {
             alert("Saldo tidak boleh negatif");
@@ -59,7 +63,7 @@ class Account {
         this._balance = amount;
     }
 
-    // ENCAPSULATION
+    // ENKAPSULASI
     deposit(amount) {
         this.balance += amount;
         this.history.push({
@@ -82,13 +86,17 @@ class Account {
 }
 
 // DATA INIT
-let users = load("users").map(u => Object.assign(new User(), u));
+let users = load("users").map(u =>
+    u.role === "admin"
+        ? Object.assign(new Admin(), u)
+        : Object.assign(new User(), u)
+);
 let accounts = load("accounts");
 let logged = JSON.parse(localStorage.getItem("logged")) || null;
 
 // Default admin
 if (!users.find(u => u.username === "admin")) {
-    users.push(new User("admin", "admin123", "admin"));
+    users.push(new Admin("admin", "admin123"));
     save("users", users);
 }
 
@@ -132,7 +140,7 @@ function login() {
     showDashboard();
 }
 
-// EVENT LOGIN
+// LOGIN
 document.getElementById("btn-login").onclick = login;
 
 function logout() {
@@ -166,7 +174,7 @@ function formatRp(n) {
     }).format(n);
 }
 
-// UI RENDER
+// UI 
 function updateDashboard() {
     const myAcc = logged.role === "admin"
         ? accounts
@@ -368,7 +376,7 @@ function renderTransferDropdown() {
 
 // UPDATE UI 
 function updateUI() {
-    // 🔥 revive object method dari LocalStorage
+    // revive object method dari LocalStorage
     accounts = accounts.map(a => Object.assign(new Account(), a));
 
     updateDashboard();
